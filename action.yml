@@ -1,0 +1,33 @@
+name: 'Setup Swap Space'
+description: 'Adds/replaces swap space.'
+branding:
+  icon: 'database'
+  color: 'gray-dark'
+inputs:
+  swap-space-path:
+    description: 'The path where the swap file should be created.'
+    required: false
+    default: '/mnt/swapfile'
+  swap-size-gb:
+    description: 'The swap space size to set up in Gigabytes.'
+    required: false
+    default: '10'
+  remove-existing-swap-files:
+    description: 'Removes existing swap files.'
+    required: false
+    default: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Before Swap Space Setup
+      shell: bash
+      run: ${{ github.action_path }}/report-memory-swap.sh
+    - name: Setup Swap Space
+      shell: bash
+      run: |
+        args=()
+        if ${{ inputs.remove-existing-swap-files }}; then args+=( '-r' ); fi
+        sudo ${{ github.action_path }}/setup-swap-space.sh -p ${{ inputs.swap-space-path }} -s ${{ inputs.swap-size-gb }} ${args[@]}
+    - name: After Swap Space Setup
+      shell: bash
+      run: ${{ github.action_path }}/report-memory-swap.sh
